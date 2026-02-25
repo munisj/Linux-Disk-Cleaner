@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# ===============================
+# Smart Disk Cleaner
+# Author: Srihari
+# Purpose: Monitor disk usage and clean unnecessary files
+# ===============================
+
+echo "======================================"
+echo "      SMART DISK CLEANER TOOL"
+echo "======================================"
+echo
+
+# Get disk usage percentage
+usage=$(df / | awk 'NR==2 {print $5}' | sed 's/%//')
+
+echo "Current Disk Usage: $usage%"
+echo
+
+# Show warning color if usage high
+if [ "$usage" -ge 80 ]; then
+    echo -e "\e[31mWARNING: Disk usage is critical!\e[0m"
+elif [ "$usage" -ge 60 ]; then
+    echo -e "\e[33mNotice: Disk usage is moderate.\e[0m"
+else
+    echo -e "\e[32mDisk usage is healthy.\e[0m"
+fi
+
+echo
+echo "Top largest directories:"
+du -h / 2>/dev/null | sort -rh | head -5
+
+echo
+read -p "Do you want to clean unnecessary files? (y/n): " confirm
+
+if [ "$confirm" != "y" ]; then
+    echo "Cleanup cancelled."
+    exit
+fi
+
+# Space before cleanup
+before=$(df -h / | awk 'NR==2 {print $4}')
+
+echo
+echo "Cleaning package cache..."
+
+if command -v apt >/dev/null; then
+    apt clean
+elif command -v dnf >/dev/null; then
+    dnf clean all
+elif command -v yum >/dev/null; then
+    yum clean all
+elif command -v pacman >/dev/null; then
+    pacman -Sc --noconfirm
+fi
+
+echo "Cleaning old logs (older than 7 days)..."
+journalctl --vacuum-time=7d 2>/dev/null
+
+echo "Cleaning temporary files..."
+rm -rf /tmp/* 2>/dev/null
+
+echo "Emptying trash..."
+rm -rf ~/.local/share/Trash/* 2>/dev/null
+
+# Space after cleanup
+after=$(df -h / | awk 'NR==2 {print $4}')
+
+echo
+echo "Disk space before cleanup: $before free"
+echo "Disk space after cleanup : $after free"
+
+echo
+echo -e "\e[32mCleanup completed successfully!\e[0m"
