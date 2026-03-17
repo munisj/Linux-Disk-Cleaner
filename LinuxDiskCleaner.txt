@@ -1,13 +1,13 @@
-#!/bin/bash
+ṣ#!/bin/bash
 
 # ===============================
 # Smart Disk Cleaner
-# Author: Srihari
+# Author:MUNI
 # Purpose: Monitor disk usage and clean unnecessary files
 # ===============================
 
-echo "======================================"
-echo "      SMART DISK CLEANER TOOL"
+echo "=====================================	="
+echo "      SMART DISK CLEANER TOOL	"
 echo "======================================"
 echo
 
@@ -44,7 +44,7 @@ before=$(df -h / | awk 'NR==2 {print $4}')
 echo
 echo "Cleaning package cache..."
 
-if command -v apt >/dev/null; then
+if command -v apt >/d	ev	/null; then
     apt clean
 elif command -v dnf >/dev/null; then
     dnf clean all
